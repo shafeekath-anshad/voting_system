@@ -1,0 +1,43 @@
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title> Election Candidates</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <div align="center">
+          <div align="center" class="border">
+                <h2 class="bottom">
+                   <table>
+    <tr>
+        <th>ID</th>
+        <th>NAME</th>
+    <th>ADDRESS</th>
+    <th>EMAIL</th>
+    <th>MOBILE</th>
+    <th>functions</th>
+    </tr>
+
+{% for row in value %}
+    <tr>
+        <td>{{row[0]}}</td>
+        <td>{{row[1]}}</td>
+        <td>{{row[2]}}</td>
+        <td>{{row[3]}}</td>
+        <td>{{row[4]}}</td>
+        <td><a class="bottom" href="{{url_for('update')}}"> update</a>
+         <a class="bottom" href="{{url_for('delete')}}"> delete</a></td>
+    </tr>
+{% endfor %}
+    <tr></tr>
+</table>
+
+                </h2>
+
+
+             </div>
+          </div>
+
+    </body>
+</html>

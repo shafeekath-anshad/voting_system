@@ -4,19 +4,20 @@
         <title> Welcome </title>
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     </head>
-    <body></br></br></br></br></br>
+    <body>
         <div align="center">
           <div align="center" class="border">
-             <div class="header">
-                <h1 class="word">Welcome</h1>
-             </div></br></br></br>
-                <h1 class="bottom">
-                     Hi {{session.username}}!!</br></br> Welcome to the voting system
+                <h2 class="bottom">
+                     Hi {{session.username}}!!</br> Welcome to the voting system
                     <div>
                         <h3>Congratulations you are eligible for vote !</h3>
+                       <p class="bottom"> <a class="bottom" href="{{url_for('vote')}}"> Vote for candidates</a></p>
+          </div>
 
-                    </div>
-                </h1></br></br></br>
+
+                </h2></br></br>
+
+
                 <a href="{{ url_for('logout') }}" class="btn">Logout</a>
           </div>
         </div>

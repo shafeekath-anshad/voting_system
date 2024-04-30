@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title> Login </title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body></br></br></br></br></br>
+        <div align="center">
+          <div align="center" class="border">
+
+                          <div class="msg">{{ msg }}</div>
+             <form action="{{ url_for('delete') }}" method="post">
+                   <h2>Do you want to delete the candidate?</h2>
+                    <input type="submit" class="btn" value="delete"></br></br>
+             </form>
+            </h2>
+            <p class="bottom"><a class="bottom" href="{{url_for('add_candidates')}}"> Add candidates</a></p>
+          </div>
+        </div>
+    </body>
+</html>

@@ -11,7 +11,7 @@
                 height: 450px;
                 border: 1px solid #236B8E;
                 border-radius: 0px;
-                background-color: #9AC0CD;
+                background-color: white;
             }
 
             .btn {
@@ -38,7 +38,7 @@
             }
 
             .word{
-                color: #FFFFFF;
+                color: #9AC0CD;
                 font-style: oblique;
                 font-weight: bold;
             }
@@ -48,3 +48,10 @@
                 font-style: oblique;
                 font-weight: bold;
             }
+            table, th, td {
+  border: 1px solid white;
+  border-collapse: collapse;
+}
+th, td {
+  background-color: #96D4D4;
+}

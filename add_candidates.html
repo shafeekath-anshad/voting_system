@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title> Register </title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body></br></br></br></br></br>
+        <div align="center">
+          <div align="center" class="border">
+             <div class="header">
+                <h1 class="word">Add Candidates</h1>
+             </div></br></br></br>
+            <h2 class="word">
+                <form action="{{ url_for('add_candidates') }}" method="post">
+                  <div class="msg">{{ msg }}</div>
+                    <input id="candidate" name="candidate" type="text" placeholder="Candidate name" class="textbox"/></br></br>
+                    <input id="address" name="address" type="text" placeholder=" Address" class="textbox"/></br></br>
+                    <input id="email" name="email" type="text" placeholder=" Email ID" class="textbox"/></br></br>
+                    <input id="mobile" name="mobile" type="text" placeholder="Mobile" class="textbox"/></br></br>
+                    <input type="submit" class="btn" value="Add candidates"></br>
+                </form>
+            </h2>
+          </div>
+        </div>
+    </body>
+</html>
