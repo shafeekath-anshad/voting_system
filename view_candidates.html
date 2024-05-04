@@ -8,8 +8,8 @@
     <body>
         <div align="center">
           <div align="center" class="border">
-                <h2 class="bottom">
-                   <table>
+
+                   <table><thead>
     <tr>
         <th>ID</th>
         <th>NAME</th>
@@ -18,22 +18,20 @@
     <th>MOBILE</th>
     <th>functions</th>
     </tr>
-
-{% for row in value %}
+</thead><tbody>
+{% for row in data %}
     <tr>
-        <td>{{row[0]}}</td>
-        <td>{{row[1]}}</td>
-        <td>{{row[2]}}</td>
-        <td>{{row[3]}}</td>
-        <td>{{row[4]}}</td>
+        <td>{{ row[0] }}</td>
+        <td>{{ row[1] }}</td>
+        <td>{{ row[2] }}</td>
+        <td>{{ row[3] }}</td>
+        <td>{{ row[4] }}</td>
         <td><a class="bottom" href="{{url_for('update')}}"> update</a>
          <a class="bottom" href="{{url_for('delete')}}"> delete</a></td>
     </tr>
-{% endfor %}
-    <tr></tr>
-</table>
+{% endfor %}</tbody>
 
-                </h2>
+</table>
 
 
              </div>

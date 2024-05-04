@@ -1,21 +1,21 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title> Welcome </title>
+        <title> Results </title>
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     </head>
     <body>
         <div align="center">
           <div align="center" class="border">
                 <h2 class="bottom">
-                    <h2>Select a candidate to vote:</h2><hr>
-    <form method="post">
-        {% for candidate in candidates %}
-        <input type="radio" name="candidate" value="{{ candidate[0] }}"> {{ candidate[1] }}<br>
+                    <h2>Voting Results:</h2>
+    <ul>
+        {% for candidate in results %}
+        <li>{{ candidate[0] }}: {{ candidate[1] }} votes</li>
         {% endfor %}
-        <input type="submit" value="Vote">
-    </form>
+    </ul>
                 </h2>
+
           </div>
         </div>
     </body>

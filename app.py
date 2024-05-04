@@ -1,19 +1,24 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
+import mysql.connector
 import re
-from sqlalchemy import delete, update
+from flask import abort
+import logging
+from sqlalchemy import update, delete
 
 app = Flask(__name__)
 
 app.secret_key = 'your_secret_key'
 
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'shafeekkath'
-app.config['MYSQL_DB'] = 'voting_system'
+conn = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="shafeekkath",
+    database="voting_system"
+)
+cursor = conn.cursor()
 
-mysql = MySQL(app)
 
 
 @app.route('/')
@@ -23,13 +28,12 @@ def login():
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         username = request.form['username']
         password = request.form['password']
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM user_register WHERE username = % s AND password = % s', (username, password,))
+
+        cursor.execute('SELECT username, password FROM user_register')
         account = cursor.fetchone()
         if account:
             session['loggedin'] = True
-            session['id'] = account['id']
-            session['username'] = account['username']
+
             msg = 'Logged in successfully !'
             return render_template('user_page.html', msg=msg)
         else:
@@ -53,8 +57,8 @@ def register():
         password = request.form['password']
         email = request.form['email']
         mobile = request.form['mobile']
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM user_register WHERE username = % s', (username,))
+
+        cursor.execute("SELECT * FROM user_register")
         account = cursor.fetchone()
         if account:
             msg = 'Account already exists !'
@@ -69,7 +73,7 @@ def register():
         else:
             cursor.execute('INSERT INTO user_register VALUES (NULL, % s, % s,% s,% s)',
                            (username, password, email, mobile,))
-            mysql.connection.commit()
+            conn.commit()
             msg = 'You have successfully registered !'
     elif request.method == 'POST':
         msg = 'Please fill out the form !'
@@ -84,7 +88,7 @@ def add_candidates():
         address = request.form['address']
         email = request.form['email']
         mobile = request.form['mobile']
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
         cursor.execute('SELECT * FROM candidate WHERE candidate = % s', (candidate,))
         account = cursor.fetchone()
         if account:
@@ -100,7 +104,7 @@ def add_candidates():
         else:
             cursor.execute('INSERT INTO candidate VALUES (NULL, % s, % s,% s,% s)',
                            (candidate, address, email, mobile,))
-            mysql.connection.commit()
+            conn.commit()
             msg = 'candidates are added !'
     elif request.method == 'POST':
         msg = 'Please add the candidates for election!'
@@ -109,11 +113,10 @@ def add_candidates():
 
 @app.route('/view_candidates')
 def view_candidates():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("SELECT * FROM candidate")
     data = cursor.fetchall()
 
-    return render_template('view_candidates.html',value=data)
+    return render_template('view_candidates.html', data=data)
 
 
 @app.route('/update')
@@ -126,12 +129,35 @@ def delete():
     return render_template('delete.html')
 
 
-@app.route('/vote')
+@app.route('/vote', methods=['GET', 'POST'])
 def vote():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("SELECT * FROM candidate")
-    data = cursor.fetchall()
-    return render_template('vote.html', value=data)
+    if request.method == 'POST':
+        try:
+            candidate_id = request.form['candidate']
+        except ValueError:
+            abort(400, "Invalid candidate ID")
+        try:
+            cursor.execute("UPDATE candidate SET votes = votes + 1 WHERE id = %s", (candidate_id,))
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            abort(500, f"Failed to update vote count: {str(e)}")
+        return redirect(url_for('results'))
+    else:
+        try:
+            cursor.execute("SELECT id, candidate FROM candidate")
+            candidates = cursor.fetchall()
+        except Exception as e:
+            logging.error(f"Failed to fetch candidates: {str(e)}")
+            abort(500, "Internal Server Error")
+        return render_template('vote.html', candidates=candidates)
+
+@app.route('/results')
+def results():
+    # Fetch candidates and their votes from the database
+    cursor.execute("SELECT candidate, votes FROM candidate ORDER BY votes DESC")
+    results = cursor.fetchall()
+    return render_template('results.html', results=results)
 
 
 if __name__ == '__main__':
