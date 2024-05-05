@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title> Update Candidates </title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body></br></br></br></br></br>
+        <div align="center">
+          <div align="center" class="border">
+             <div class="header">
+                <h1 class="word">Update Candidates</h1>
+             </div></br></br></br>
+            <h2 class="word">
+                <form action="{{ url_for('update_candidate', id=candidate[0]) }}" method="post">
+
+        <label for="candidate">candidate:</label>
+        <input type="text" id="candidate" name="candidate" value="{{ candidate[1] }}"><br>
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address" value="{{ candidate[2] }}"><br>
+                    <label for="email">Email:</label>
+        <input type="text" id="email" name="email" value="{{ candidate[3] }}"><br>
+        <label for="mobile">Mobile:</label>
+        <input type="text" id="mobile" name="mobile" value="{{ candidate[4] }}"><br>
+        <button type="submit">Update</button>
+    </form>
+            </h2>
+          </div>
+        </div>
+    </body>
+</html>

@@ -1,23 +1,24 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from flask_mysqldb import MySQL
+
 import MySQLdb.cursors
 import mysql.connector
+from flask_mysqldb import MySQL
 import re
 from flask import abort
 import logging
 from sqlalchemy import update, delete
 
 app = Flask(__name__)
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'shafeekkath'
+app.config['MYSQL_DB'] = 'voting_system'
+
+mysql = MySQL(app)
 
 app.secret_key = 'your_secret_key'
 
-conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="shafeekkath",
-    database="voting_system"
-)
-cursor = conn.cursor()
+
 
 
 
@@ -25,16 +26,16 @@ cursor = conn.cursor()
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     msg = ''
-    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+    if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-
-        cursor.execute('SELECT username, password FROM user_register')
-        account = cursor.fetchone()
-        if account:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM user_register WHERE username = %s AND password = %s', (username, password))
+        user = cursor.fetchone()
+        if user:
             session['loggedin'] = True
-
-            msg = 'Logged in successfully !'
+            session['id'] = user['id']
+            session['username'] = user['username']
             return render_template('user_page.html', msg=msg)
         else:
             msg = 'Incorrect username / password !'
@@ -51,100 +52,96 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    msg = ''
-    if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'mobile' in request.form and 'email' in request.form:
+    if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         email = request.form['email']
         mobile = request.form['mobile']
+        cursor = mysql.connection.cursor()
+        cursor.execute('INSERT INTO user_register(username, password,email,mobile) VALUES (%s, %s,%s,%s)', (username, password,email,mobile))
 
-        cursor.execute("SELECT * FROM user_register")
-        account = cursor.fetchone()
-        if account:
-            msg = 'Account already exists !'
-        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-            msg = 'Invalid email address !'
-        elif not re.match(r'[A-Za-z0-9]+', username):
-            msg = 'Username must contain only characters and numbers !'
-        elif not re.match(r'[A-Za-z0-9]+', mobile):
-            msg = 're enter mobile number !'
-        elif not username or not password or not email:
-            msg = 'Please fill out the form !'
-        else:
-            cursor.execute('INSERT INTO user_register VALUES (NULL, % s, % s,% s,% s)',
-                           (username, password, email, mobile,))
-            conn.commit()
-            msg = 'You have successfully registered !'
-    elif request.method == 'POST':
-        msg = 'Please fill out the form !'
-    return render_template('register.html', msg=msg)
+        mysql.connection.commit()
+        cursor.close()
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
 
 
 @app.route('/add_candidates', methods=['GET', 'POST'])
 def add_candidates():
     msg = ''
-    if request.method == 'POST' and 'candidate' in request.form and 'address' in request.form and 'mobile' in request.form and 'email' in request.form:
+    if request.method == 'POST':
         candidate = request.form['candidate']
         address = request.form['address']
         email = request.form['email']
         mobile = request.form['mobile']
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('INSERT INTO candidate(candidate, address,email,mobile) VALUES (%s, %s,%s,%s)',
+                       (candidate, address, email, mobile))
+        mysql.connection.commit()
+        cursor.close()
+        return redirect(url_for('view_candidates'))
 
-        cursor.execute('SELECT * FROM candidate WHERE candidate = % s', (candidate,))
-        account = cursor.fetchone()
-        if account:
-            msg = 'Account already exists !'
-        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-            msg = 'Invalid email address !'
-        elif not re.match(r'[A-Za-z0-9]+', candidate):
-            msg = 'Username must contain only characters and numbers !'
-        elif not re.match(r'[A-Za-z0-9]+', mobile):
-            msg = 're enter mobile number !'
-        elif not candidate or not mobile or not email:
-            msg = 'Please fill out the form !'
-        else:
-            cursor.execute('INSERT INTO candidate VALUES (NULL, % s, % s,% s,% s)',
-                           (candidate, address, email, mobile,))
-            conn.commit()
-            msg = 'candidates are added !'
-    elif request.method == 'POST':
-        msg = 'Please add the candidates for election!'
     return render_template('add_candidates.html', msg=msg)
 
 
 @app.route('/view_candidates')
 def view_candidates():
+    cursor = mysql.connection.cursor()
     cursor.execute("SELECT * FROM candidate")
-    data = cursor.fetchall()
+    candidates = cursor.fetchall()
+    cursor.close()
 
-    return render_template('view_candidates.html', data=data)
-
-
-@app.route('/update')
-def update():
-    return render_template('update.html')
+    return render_template('view_candidates.html', candidates=candidates)
 
 
-@app.route('/delete')
-def delete():
-    return render_template('delete.html')
+@app.route('/view_candidates/update_candidate/<int:id>', methods=['GET', 'POST'])
+def update_candidate(id):
+    cursor = mysql.connection.cursor()
+    if request.method == 'POST':
+        candidate = request.form['candidate']
+        address = request.form['address']
+        email = request.form['email']
+        mobile = request.form['mobile']
+        cursor.execute("UPDATE candidate SET candidate = %s, address = %s, email = %s, mobile = %s WHERE id = %s", (candidate, address,email,mobile, id))
+        mysql.connection.commit()
+        cursor.close()
+        return redirect(url_for('view_candidates'))
+    else:
+        cursor.execute("SELECT id, candidate, address, email, mobile FROM candidate WHERE id = %s", (id,))
+        candidate = cursor.fetchone()
+        cursor.close()
+        return render_template('update_candidate.html', candidate=candidate)
+
+
+@app.route('/view_candidates/delete/<int:id>', methods=['POST'])
+def delete_candidate(id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("DELETE FROM candidate WHERE id = %s", (id,))
+    mysql.connection.commit()
+    cursor.close()
+    return redirect(url_for('view_candidates'))
 
 
 @app.route('/vote', methods=['GET', 'POST'])
 def vote():
     if request.method == 'POST':
         try:
-            candidate_id = request.form['candidate']
+            candidate_id = int(request.form['candidate'])  # Ensure candidate_id is an integer
         except ValueError:
             abort(400, "Invalid candidate ID")
         try:
+            cursor = mysql.connection.cursor()
             cursor.execute("UPDATE candidate SET votes = votes + 1 WHERE id = %s", (candidate_id,))
-            conn.commit()
+            mysql.connection.commit()
         except Exception as e:
-            conn.rollback()
-            abort(500, f"Failed to update vote count: {str(e)}")
-        return redirect(url_for('results'))
+            mysql.connection.rollback()
+            logging.error(f"Failed to update vote count: {str(e)}")
+            abort(500, "Internal Server Error")
+        return redirect(url_for('results'))  # Redirect to an existing route
     else:
         try:
+            cursor = mysql.connection.cursor()
             cursor.execute("SELECT id, candidate FROM candidate")
             candidates = cursor.fetchall()
         except Exception as e:
@@ -155,6 +152,7 @@ def vote():
 @app.route('/results')
 def results():
     # Fetch candidates and their votes from the database
+    cursor = mysql.connection.cursor()
     cursor.execute("SELECT candidate, votes FROM candidate ORDER BY votes DESC")
     results = cursor.fetchall()
     return render_template('results.html', results=results)

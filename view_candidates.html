@@ -19,15 +19,23 @@
     <th>functions</th>
     </tr>
 </thead><tbody>
-{% for row in data %}
+{% for candidate in candidates %}
     <tr>
-        <td>{{ row[0] }}</td>
-        <td>{{ row[1] }}</td>
-        <td>{{ row[2] }}</td>
-        <td>{{ row[3] }}</td>
-        <td>{{ row[4] }}</td>
-        <td><a class="bottom" href="{{url_for('update')}}"> update</a>
-         <a class="bottom" href="{{url_for('delete')}}"> delete</a></td>
+        <td>{{ candidate[0] }}</td>
+        <td>{{ candidate[1] }}</td>
+        <td>{{ candidate[2] }}</td>
+        <td>{{ candidate[3] }}</td>
+        <td>{{ candidate[4] }}</td>
+        <td>
+            <form action="{{ url_for('update_candidate', id=candidate[0]) }}" method="get">
+    <button type="submit">Update</button>
+</form>
+<form action="{{ url_for('delete_candidate', id=candidate[0]) }}" method="post">
+    <button type="submit">Delete</button>
+</form>
+
+
+                    </td>
     </tr>
 {% endfor %}</tbody>
 
